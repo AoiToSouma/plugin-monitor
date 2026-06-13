@@ -4,9 +4,38 @@ Grafana + Prometheus による XDC Plugin Node 監視スタック。
 
 ## 構成
 
-- **Prometheus** (`:9090`) — 4台のPlugin Nodeから30秒ごとにメトリクスを収集
-- **Grafana** (`:8090`) — ダッシュボード表示
-- **nginx** — リバースプロキシ（HTTPS）
+```
+Plugin Node x4 (:6689/metrics)
+        ↓ pull (30秒ごと)
+  Prometheus (:9090)   ← メトリクス収集・保存・クエリ
+        ↓
+    Grafana (:8090)    ← ダッシュボード表示
+        ↓
+  nginx (80/443)       ← リバースプロキシ (HTTPS)
+        ↓
+     ブラウザ
+```
+
+### Prometheus
+
+メトリクスの収集・保存・クエリを担当。ブラウザから `http://localhost:9090` でExplorer（管理画面）にアクセスでき、PromQLでメトリクスを直接クエリできる。外部には公開せず、SSHトンネル経由でアクセスする。
+
+### Grafana
+
+Prometheusのデータを可視化するダッシュボード。nginxのリバースプロキシ経由で `https://your.domain.example` からアクセスする。
+
+## SSHトンネルでのアクセス
+
+PrometheusのExplorerは外部に公開しないため、SSHトンネルでローカルPCから安全にアクセスする。
+
+```bash
+# ローカルPCで実行
+ssh -L 9090:localhost:9090 ユーザー名@監視VPSのIP
+```
+
+接続後、ローカルのブラウザで `http://localhost:9090` を開く。
+
+> Grafanaはnginx経由で `https://your.domain.example` に直接アクセスできるためSSHトンネル不要。
 
 ## 監視対象ノード
 
