@@ -48,16 +48,10 @@ docker compose up -d
 #### Certbotのインストール（未インストールの場合）
 
 ```bash
-sudo apt install certbot python3-certbot-nginx
+sudo apt install -y certbot python3-certbot-nginx
 ```
 
-#### SSL証明書の取得
-
-```bash
-sudo certbot --nginx -d your.domain.example
-```
-
-#### nginxの設定ファイルを作成・有効化
+#### nginx設定ファイルを作成（port 80のみ）
 
 ```bash
 # テンプレートからコピーしてドメインを設定
@@ -70,9 +64,17 @@ sudo ln -s $(pwd)/nginx/plugin-monitor.conf /etc/nginx/sites-available/plugin-mo
 # sites-enabledに有効化
 sudo ln -s /etc/nginx/sites-available/plugin-monitor /etc/nginx/sites-enabled/plugin-monitor
 
-# 設定確認・反映
-sudo nginx -t
-sudo systemctl reload nginx
+# 文法チェックしてリロード
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+#### Certbotを実行（nginx設定が自動でHTTPS対応に書き換えられる）
+
+```bash
+sudo certbot --nginx -d your.domain.example
+
+# 自動更新の確認
+sudo certbot renew --dry-run
 ```
 
 ### 6. Grafanaへアクセス
