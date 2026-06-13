@@ -59,32 +59,14 @@ sudo certbot --nginx -d your.domain.example
 
 #### nginxの設定ファイルを作成
 
-`/etc/nginx/sites-available/grafana` を作成：
+```bash
+cp nginx/grafana.conf.example nginx/grafana.conf
+```
 
-```nginx
-server {
-    listen 80;
-    server_name your.domain.example;
-    return 301 https://$host$request_uri;
-}
+`nginx/grafana.conf` を編集して `your.domain.example` を実際のドメインに置き換える。
 
-server {
-    listen 443 ssl;
-    server_name your.domain.example;
-
-    ssl_certificate     /etc/letsencrypt/live/your.domain.example/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/your.domain.example/privkey.pem;
-    include             /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
-
-    location / {
-        proxy_pass http://localhost:8090;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+```bash
+sudo ln -s $(pwd)/nginx/grafana.conf /etc/nginx/sites-available/grafana
 ```
 
 #### 有効化して再起動

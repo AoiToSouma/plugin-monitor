@@ -7,3 +7,6 @@ docker-compose.override.yml
 
 # Prometheus config contains node IPs — use prometheus.yml.example as template
 prometheus/prometheus.yml
+
+# nginx config contains domain name — use nginx/grafana.conf.example as template
+nginx/grafana.conf
