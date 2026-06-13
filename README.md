@@ -5,11 +5,12 @@ Grafana + Prometheus による XDC Plugin Node 監視スタック。
 ## 構成
 
 - **Prometheus** (`:9090`) — 4台のPlugin Nodeから30秒ごとにメトリクスを収集
-- **Grafana** (`:3000`) — ダッシュボード表示
+- **Grafana** (`:8090`) — ダッシュボード表示
+- **nginx** — リバースプロキシ（HTTPS）
 
 ## 監視対象ノード
 
-監視対象のIPアドレスは `prometheus/prometheus.yml` に直接記載してください。
+監視対象のIPアドレスは `prometheus/prometheus.yml` に直接記載してください（テンプレート: `prometheus/prometheus.yml.example`）。
 
 ## セットアップ
 
@@ -20,7 +21,15 @@ curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 ```
 
-### 2. パスワードの変更
+### 2. Prometheusの設定
+
+```bash
+cp prometheus/prometheus.yml.example prometheus/prometheus.yml
+```
+
+`prometheus/prometheus.yml` を編集して各ノードのIPアドレスを記載する。
+
+### 3. Grafanaパスワードの変更
 
 `docker-compose.yml` の以下の行を編集：
 
@@ -28,20 +37,78 @@ sudo usermod -aG docker $USER
 - GF_SECURITY_ADMIN_PASSWORD=your_password_here
 ```
 
-### 3. 起動
+### 4. 起動
 
 ```bash
 docker compose up -d
 ```
 
-### 4. Grafanaへアクセス
+### 5. nginx + Let's Encrypt の設定
 
-`http://<監視VPSのIP>:3000` をブラウザで開く。
+#### Certbotのインストール（未インストールの場合）
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+```
+
+#### SSL証明書の取得
+
+```bash
+sudo certbot --nginx -d your.domain.example
+```
+
+#### nginxの設定ファイルを作成
+
+`/etc/nginx/sites-available/grafana` を作成：
+
+```nginx
+server {
+    listen 80;
+    server_name your.domain.example;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name your.domain.example;
+
+    ssl_certificate     /etc/letsencrypt/live/your.domain.example/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your.domain.example/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://localhost:8090;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+#### 有効化して再起動
+
+```bash
+sudo ln -s /etc/nginx/sites-available/grafana /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 6. Grafanaへアクセス
+
+`https://your.domain.example` をブラウザで開く。
 
 - ユーザー名: `admin`
-- パスワード: 手順2で設定したもの
+- パスワード: 手順3で設定したもの
 
 ダッシュボードは `Plugin Nodes > XDC Plugin Node Monitor` に自動で読み込まれます。
+
+### 7. SSL証明書の自動更新確認
+
+```bash
+sudo certbot renew --dry-run
+```
 
 ## ファイアウォール設定（各Plugin NodeのVPS）
 
