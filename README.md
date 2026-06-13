@@ -57,22 +57,20 @@ sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d your.domain.example
 ```
 
-#### nginxの設定ファイルを作成
+#### nginxの設定ファイルを作成・有効化
 
 ```bash
-cp nginx/grafana.conf.example nginx/grafana.conf
-```
+# テンプレートからコピーしてドメインを設定
+cp nginx/plugin-monitor.conf.example nginx/plugin-monitor.conf
+sed -i 's/your.domain.example/実際のドメイン/g' nginx/plugin-monitor.conf
 
-`nginx/grafana.conf` を編集して `your.domain.example` を実際のドメインに置き換える。
+# plugin-monitorのファイルをsites-availableにシンボリックリンク
+sudo ln -s $(pwd)/nginx/plugin-monitor.conf /etc/nginx/sites-available/plugin-monitor
 
-```bash
-sudo ln -s $(pwd)/nginx/grafana.conf /etc/nginx/sites-available/grafana
-```
+# sites-enabledに有効化
+sudo ln -s /etc/nginx/sites-available/plugin-monitor /etc/nginx/sites-enabled/plugin-monitor
 
-#### 有効化して再起動
-
-```bash
-sudo ln -s /etc/nginx/sites-available/grafana /etc/nginx/sites-enabled/
+# 設定確認・反映
 sudo nginx -t
 sudo systemctl reload nginx
 ```
