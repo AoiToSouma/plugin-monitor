@@ -1,0 +1,9 @@
+# Grafana/Prometheus data volumes (managed by Docker)
+grafana_data/
+prometheus_data/
+
+# Override file for local secrets
+docker-compose.override.yml
+
+# Prometheus config contains node IPs — use prometheus.yml.example as template
+prometheus/prometheus.yml

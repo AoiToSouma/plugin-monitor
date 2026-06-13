@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: 'plugin_nodes'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - targets: ['YOUR_NODE1_IP:6689']
+        labels:
+          node: 'node1-label'
+      - targets: ['YOUR_NODE2_IP:6689']
+        labels:
+          node: 'node2-label'
+      - targets: ['YOUR_NODE3_IP:6689']
+        labels:
+          node: 'node3-label'
+      - targets: ['YOUR_NODE4_IP:6689']
+        labels:
+          node: 'node4-label'
