@@ -18,8 +18,16 @@ Grafana + Prometheus による XDC Plugin Node 監視スタック。
 
 ```bash
 curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
 ```
+
+インストール後、現在のユーザーをdockerグループに追加する。これをしないと `docker` コマンド実行時に `permission denied` エラーが発生する。
+
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+> `newgrp docker` が効かない場合は一度ログアウト→ログインし直す。
 
 ### 2. Prometheusの設定
 
