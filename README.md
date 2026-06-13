@@ -37,13 +37,23 @@ cp prometheus/prometheus.yml.example prometheus/prometheus.yml
 - GF_SECURITY_ADMIN_PASSWORD=your_password_here
 ```
 
-### 4. 起動
+### 4. Docker Hubにログイン
+
+Docker HubはIPアドレス単位でpullレート制限をかけている。VPSの場合、以前の利用者の使用履歴が残っていることがあり、初回でも制限に引っかかる場合がある。ログインすることで制限を回避できる。
+
+[hub.docker.com](https://hub.docker.com) でアカウント作成後：
+
+```bash
+docker login
+```
+
+### 5. 起動
 
 ```bash
 docker compose up -d
 ```
 
-### 5. nginx + Let's Encrypt の設定
+### 6. nginx + Let's Encrypt の設定
 
 #### Certbotのインストール（未インストールの場合）
 
@@ -77,7 +87,7 @@ sudo certbot --nginx -d your.domain.example
 sudo certbot renew --dry-run
 ```
 
-### 6. Grafanaへアクセス
+### 7. Grafanaへアクセス
 
 `https://your.domain.example` をブラウザで開く。
 
@@ -86,7 +96,7 @@ sudo certbot renew --dry-run
 
 ダッシュボードは `Plugin Nodes > XDC Plugin Node Monitor` に自動で読み込まれます。
 
-### 7. SSL証明書の自動更新確認
+### 8. SSL証明書の自動更新確認
 
 ```bash
 sudo certbot renew --dry-run
