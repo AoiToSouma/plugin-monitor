@@ -35,7 +35,13 @@ ssh -L 9090:localhost:9090 ユーザー名@監視VPSのIP
 
 接続後、ローカルのブラウザで `http://localhost:9090` を開く。
 
-> Grafanaはnginx経由で `https://your.domain.example` に直接アクセスできるためSSHトンネル不要。
+> GrafanaはSSHトンネルでもアクセス可能。nginxのセットアップ前の動作確認や、外部に公開せず使いたい場合は以下を使う：
+>
+> ```bash
+> ssh -L 8090:localhost:8090 ユーザー名@監視VPSのIP
+> ```
+>
+> 接続後、ローカルのブラウザで `http://localhost:8090` を開く。
 
 ## 監視対象ノード
 
