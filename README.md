@@ -125,9 +125,6 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ```bash
 sudo certbot --nginx -d your.domain.example
-
-# 自動更新の確認
-sudo certbot renew --dry-run
 ```
 
 ### 7. Grafanaへアクセス
@@ -141,8 +138,56 @@ sudo certbot renew --dry-run
 
 ### 8. SSL証明書の自動更新確認
 
+nginx が稼働している環境では、Certbot の更新方式に `standalone` を使用しないでください。
+`standalone` は認証用の一時 Web サーバーを TCP 80 番ポートで起動するため、nginx と競合して
+自動更新に失敗します。
+
+証明書の取得・再発行後は、renewal 設定が `nginx` になっていることを確認します。
+
+```bash
+sudo grep -H -E '^(authenticator|installer) *=' \
+  /etc/letsencrypt/renewal/*.conf
+```
+
+各証明書について、次のように表示されれば正常です。
+
+```ini
+authenticator = nginx
+installer = nginx
+```
+
+自動更新タイマーを有効化し、次回実行予定を確認します。
+
+```bash
+sudo systemctl enable --now certbot.timer
+systemctl list-timers certbot.timer
+```
+
+最後に、本番と同じ更新経路をドライランで検証します。
+
 ```bash
 sudo certbot renew --dry-run
+```
+
+`Congratulations, all simulated renewals succeeded` と表示されれば、自動更新は正常です。
+
+証明書を失効後に再発行する場合や、既存の `standalone` 設定を `nginx` へ切り替える場合は、
+nginx を停止せず、次の形式で対象の証明書を再発行します。
+
+```bash
+sudo certbot certonly --nginx \
+  --cert-name your.domain.example \
+  -d your.domain.example
+
+sudo nginx -t
+sudo systemctl reload nginx
+sudo certbot renew --dry-run
+```
+
+更新に失敗した場合は、Certbot のログを確認します。
+
+```bash
+sudo journalctl -u certbot.service --since "30 days ago" --no-pager
 ```
 
 ## ファイアウォール設定（各Plugin NodeのVPS）
